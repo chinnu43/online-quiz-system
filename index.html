@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Quiz System</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 650px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4b4b4b;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #777;
+            margin-bottom: 25px;
+        }
+
+        .start-box {
+            text-align: center;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #5568d8;
+        }
+
+        .quiz-box {
+            display: none;
+        }
+
+        .question-number {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .question {
+            font-size: 21px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .option {
+            display: block;
+            padding: 13px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .option:hover {
+            background: #f0f2ff;
+            border-color: #667eea;
+        }
+
+        .option input {
+            margin-right: 10px;
+        }
+
+        .next-btn {
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .result {
+            display: none;
+            text-align: center;
+        }
+
+        .result h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .score {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 15px;
+        }
+
+        .pass {
+            color: green;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .fail {
+            color: red;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .progress {
+            margin-bottom: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- START PAGE -->
+    <div class="start-box" id="startBox">
+
+        <h1>ONLINE QUIZ SYSTEM</h1>
+
+        <p class="subtitle">
+            Test Your Java Knowledge
+        </p>
+
+        <input
+            type="text"
+            id="name"
+            placeholder="Enter your name"
+        >
+
+        <button onclick="startQuiz()">
+            Start Quiz
+        </button>
+
+    </div>
+
+
+    <!-- QUIZ PAGE -->
+    <div class="quiz-box" id="quizBox">
+
+        <div class="progress" id="progress"></div>
+
+        <div class="question-number" id="questionNumber"></div>
+
+        <div class="question" id="question"></div>
+
+        <div id="options"></div>
+
+        <button class="next-btn" onclick="nextQuestion()">
+            Next Question
+        </button>
+
+    </div>
+
+
+    <!-- RESULT PAGE -->
+    <div class="result" id="resultBox">
+
+        <h1>QUIZ COMPLETED</h1>
+
+        <h2 id="resultName"></h2>
+
+        <div class="score" id="score"></div>
+
+        <div id="resultStatus"></div>
+
+        <br>
+
+        <button onclick="location.reload()">
+            Try Again
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    const questions = [
+
+        {
+            question: "Which language is used for Android development?",
+            options: ["Java", "HTML", "SQL", "CSS"],
+            answer: 0
+        },
+
+        {
+            question: "Which keyword is used to create a class in Java?",
+            options: ["function", "class", "object", "define"],
+            answer: 1
+        },
+
+        {
+            question: "Which method is the starting point of a Java program?",
+            options: ["start()", "run()", "main()", "execute()"],
+            answer: 2
+        },
+
+        {
+            question: "Which symbol is used to end a statement in Java?",
+            options: [".", ":", ";", ","],
+            answer: 2
+        },
+
+        {
+            question: "Which data type is used to store whole numbers?",
+            options: ["float", "int", "char", "boolean"],
+            answer: 1
+        }
+
+    ];
+
+
+    let currentQuestion = 0;
+    let score = 0;
+    let userName = "";
+
+
+    function startQuiz() {
+
+        userName = document.getElementById("name").value.trim();
+
+        if (userName === "") {
+            alert("Please enter your name.");
+            return;
+        }
+
+        document.getElementById("startBox").style.display = "none";
+
+        document.getElementById("quizBox").style.display = "block";
+
+        showQuestion();
+    }
+
+
+    function showQuestion() {
+
+        const q = questions[currentQuestion];
+
+        document.getElementById("progress").innerHTML =
+            "Question " + (currentQuestion + 1) +
+            " of " + questions.length;
+
+        document.getElementById("questionNumber").innerHTML =
+            "Question " + (currentQuestion + 1);
+
+        document.getElementById("question").innerHTML =
+            q.question;
+
+        const optionsDiv = document.getElementById("options");
+
+        optionsDiv.innerHTML = "";
+
+        q.options.forEach((option, index) => {
+
+            optionsDiv.innerHTML += `
+                <label class="option">
+                    <input
+                        type="radio"
+                        name="answer"
+                        value="${index}"
+                    >
+                    ${option}
+                </label>
+            `;
+
+        });
+
+        if (currentQuestion === questions.length - 1) {
+            document.querySelector(".next-btn").innerHTML =
+                "Submit Quiz";
+        } else {
+            document.querySelector(".next-btn").innerHTML =
+                "Next Question";
+        }
+    }
+
+
+    function nextQuestion() {
+
+        const selected =
+            document.querySelector(
+                'input[name="answer"]:checked'
+            );
+
+        if (!selected) {
+            alert("Please select an answer.");
+            return;
+        }
+
+        const selectedAnswer =
+            parseInt(selected.value);
+
+        if (selectedAnswer === questions[currentQuestion].answer) {
+            score++;
+        }
+
+        currentQuestion++;
+
+        if (currentQuestion < questions.length) {
+
+            showQuestion();
+
+        } else {
+
+            showResult();
+
+        }
+    }
+
+
+    function showResult() {
+
+        document.getElementById("quizBox").style.display = "none";
+
+        document.getElementById("resultBox").style.display = "block";
+
+        document.getElementById("resultName").innerHTML =
+            "Well done, " + userName + "!";
+
+        document.getElementById("score").innerHTML =
+            "Score: " + score + "/" + questions.length;
+
+        if (score >= 3) {
+
+            document.getElementById("resultStatus").innerHTML =
+                '<div class="pass">Result: PASS</div>';
+
+        } else {
+
+            document.getElementById("resultStatus").innerHTML =
+                '<div class="fail">Result: FAIL</div>';
+
+        }
+
+    }
+
+</script>
+
+</body>
+</html>
